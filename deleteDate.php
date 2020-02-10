@@ -1,7 +1,9 @@
 <?php
 
-$connection = mysqli_connect("localhost","root","");
-$db = mysqli_select_db($connection, "backhausverein");
+require_once("tableConfig.php"); 
+
+$connection = mysqli_connect($database_host, $database_user, $database_pass);
+$db = mysqli_select_db($connection, $database_name);
 mysqli_set_charset($connection, "utf8");
 
 if ( isset($_POST["submitBookingData"]) ) {

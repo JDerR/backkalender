@@ -2,9 +2,16 @@
 
 header("Content-Type: text/html; charset=UTF-8");
 
+require_once("tableConfig.php"); 
+
 // gibt Kalendertabelle eines Monats aus
 // showCalender(12,2019)
 function showCalender($month, $year) {
+  global $database_host;
+  global $database_name;
+  global $database_user;
+  global $database_pass;
+
   // Wochennamen
   $daysOfTheWeek = array('Maandag','Dingsdag','Middeweeken','Dünnersdag','Freedag','Sünnabend','Sünndag');
   // erster Tag des Monats
@@ -21,8 +28,8 @@ function showCalender($month, $year) {
   $dateToday = date('Y-m-d');
 
   // DB handler
-  $connection = mysqli_connect("localhost","root","");
-  $db = mysqli_select_db($connection, "backhausverein");
+  $connection = mysqli_connect($database_host, $database_user, $database_pass);
+  $db = mysqli_select_db($connection, $database_name);
   mysqli_set_charset($connection, "utf8");
 
   // bereits gebuchte termine aus DB lesen
@@ -156,9 +163,13 @@ function showCalender($month, $year) {
 
 // liesst backgruppen aus db fuer buchungsmenue
 function fetchBackgruppen() {
+  global $database_host;
+  global $database_name;
+  global $database_user;
+  global $database_pass;
 
-  $connection = mysqli_connect("localhost","root","");
-  $db = mysqli_select_db($connection, "backhausverein");
+  $connection = mysqli_connect($database_host, $database_user, $database_pass);
+  $db = mysqli_select_db($connection, $database_name);
   mysqli_set_charset($connection, "utf8");
 
   $query = "SELECT backgruppeName FROM backgruppen WHERE aktiv = '1'";
