@@ -18,14 +18,15 @@ function showCalender($month, $year) {
   // dateComponent erster Tag des Monats
   $dateCoponent = getdate($firstDayOfMonth);
   // Name des Monats
-  $monthName = $dateCoponent['month'];
+  $monthNames = array('Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember');
+  $monthName = $monthNames[ $dateCoponent['mon']-1 ];
   // Wochentag des ersten Monatstages als integer 0-6
   $dayOfTheWeek = $dateCoponent['wday'];
   // heutiges Datum
   $dateToday = date('Y-m-d');
 
   // HTML table fuer Ausgabe
-  $calender = "<center><h1>" . $monthName . ", " . $year . "   " . $month . "</h1></center><br>";
+  $calender = "<center><h1>" . $monthName . " " . $year . "</h1></center><br>";
 
   // Buttons um Monat zu wechseln
   $calender .= "<center>";
