@@ -1,35 +1,36 @@
 <?php
 
-require_once("tableConfig.php"); 
+require_once("dbh.class.php"); 
 
-$connection = mysqli_connect($database_host, $database_user, $database_pass);
-$db = mysqli_select_db($connection, $database_name);
-mysqli_set_charset($connection, "utf8");
+$connection = new Dbh();
 
 if ( isset($_POST["submitBookingData"]) ) {
   $backgruppe = $_POST["InputBackgruppe"];
   $password = $_POST["InputPassword"];
   $requestedDate = $_POST["requestedDate"];
+  $requestedSlot = $_POST["timeslot"];
 
   // lese aus dem angefragten datum wieder monat und jahr
   $year = date("Y", strtotime($requestedDate));
   $month = date("m", strtotime($requestedDate));
 
   // lese Passwort der Backgruppe aus Datenbank
-  $query = "SELECT passwort FROM backgruppen WHERE backgruppeName = '" . $backgruppe . "'";
-  $runQuery = mysqli_query($connection, $query);
-  if ( $result = $runQuery->fetch_row() ) {
-    $passwordFromDb = $result[0]; 
+  $sql = "SELECT passwort FROM backgruppen WHERE backgruppeName = ?";
+  $stmt = $connection->connect()->prepare($sql);
+  $stmt->execute( [$backgruppe] );
+
+  if ( $result = $stmt->fetchAll() ) {
+    $passwordFromDb = $result[0]["passwort"]; 
 
     // pruefe ob passwort richtig eingegeben wurde
     if ( $password==$passwordFromDb ) {
 
       // beim angefragten backtermin "storniert" auf Wert 1 setzen
-      $newQuery = "UPDATE backtermine SET storniert = '1' WHERE backtermin='" . $requestedDate . "'";
-      $runNewQuery = mysqli_query($connection, $newQuery);
-      echo var_dump($newQuery);
+      $newQuery = "UPDATE backtermine SET storniert = 'ja' WHERE backtermin = :requestedDate AND slot = :slot";
+      $newStmt = $connection->connect()->prepare($newQuery);
 
-      if ($runNewQuery) {
+      if ( $newStmt->execute( array("requestedDate" => $requestedDate, "slot" => $requestedSlot) ) ) {
+
         echo "<script> alert('Backtermin storniert'); </script>";
         header("Location: index.php?month=" . $month . "&year=" . $year . "&msg=<div class='alert alert-success' role='alert'>Backtermin erfolgreich storniert.</div>");
       }

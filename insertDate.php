@@ -1,15 +1,14 @@
 <?php
 
-require_once("tableConfig.php"); 
+require_once("dbh.class.php"); 
 
-$connection = mysqli_connect($database_host, $database_user, $database_pass);
-$db = mysqli_select_db($connection, $database_name);
-mysqli_set_charset($connection, "utf8");
+$connection = new Dbh();
 
 if ( isset($_POST["submitBookingData"]) ) {
   $backgruppe = $_POST["InputBackgruppe"];
   $password = $_POST["InputPassword"];
   $requestedDate = $_POST["requestedDate"];
+  $requestedSlot = $_POST["timeslot"];
 
   // lese aus dem angefragten datum wieder monat und jahr
   $year = date("Y", strtotime($requestedDate));
@@ -19,20 +18,23 @@ if ( isset($_POST["submitBookingData"]) ) {
   echo var_dump($month);
 
   // lese Passwort der Backgruppe aus Datenbank
-  $query = "SELECT passwort FROM backgruppen WHERE backgruppeName = '" . $backgruppe . "'";
-  $runQuery = mysqli_query($connection, $query);
-  if ( $result = $runQuery->fetch_row() ) {
-    $passwordFromDb = $result[0]; 
+  $sql = "SELECT passwort FROM backgruppen WHERE backgruppeName = ?";
+  $stmt = $connection->connect()->prepare($sql);
+  $stmt->execute( [$backgruppe] );
+
+  if ( $result = $stmt->fetchAll() ) {
+    $passwordFromDb = $result[0]["passwort"]; 
 
     // pruefe ob passwort richtig eingegeben wurde
     if ( $password==$passwordFromDb ) {
 
       // pruefe ob termin bereits gebucht wurde
-      $query = "SELECT backtermin FROM backtermine WHERE storniert!='1'";
-      $runQuery = mysqli_query($connection, $query);
+      $sql = "SELECT backtermin FROM backtermine WHERE storniert!='ja' AND slot = ?";
+      $stmt = $connection->connect()->prepare($sql);
+      $stmt->execute( [$requestedSlot] );
 
-      if ($runQuery) {
-        foreach ( $runQuery as $row ) {
+      if ($result = $stmt->fetchAll()) {
+        foreach ( $result as $row ) {
           $bookings[] = $row["backtermin"];
         }
       } 
@@ -41,10 +43,11 @@ if ( isset($_POST["submitBookingData"]) ) {
         // Termin ist noch frei und wird gebucht
 
         // angefragter backtermin in DB speichern
-        $newQuery = "INSERT INTO backtermine (id,backgruppeName,backtermin,storniert) VALUES (NULL,'" . $backgruppe . "','" . $requestedDate . "','0')";
-        $runNewQuery = mysqli_query($connection, $newQuery);
-        echo var_dump($runNewQuery);
-        if ($runNewQuery) {
+        //$newQuery = "INSERT INTO backtermine (id,backgruppeName,backtermin,storniert) VALUES (NULL,'" . $backgruppe . "','" . $requestedDate . "','0')";
+        $newQuery = "INSERT INTO backtermine (id,backgruppeName,backtermin,storniert,slot) VALUES (NULL,:backgruppe,:requestedDate,'nein',:slot)";
+        $newStmt = $connection->connect()->prepare($newQuery);
+        $newStmt->execute( array("backgruppe" => $backgruppe, "requestedDate" => $requestedDate, "slot" => $requestedSlot) );
+        if ($newStmt) {
           echo "<script> alert('Backtermin gespeichert'); </script>";
           header("Location: index.php?month=" . $month . "&year=" . $year . "&msg=<div class='alert alert-success' role='alert'>Backtermin erfolgreich eingetragen.</div>");
         }
