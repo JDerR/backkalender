@@ -2,18 +2,15 @@
 
 header("Content-Type: text/html; charset=UTF-8");
 
-require_once("tableConfig.php"); 
+require("dbh.class.php"); 
+require("bookingDay.class.php");
 
 // gibt Kalendertabelle eines Monats aus
 // showCalender(12,2019)
 function showCalender($month, $year) {
-  global $database_host;
-  global $database_name;
-  global $database_user;
-  global $database_pass;
 
   // Wochennamen
-  $daysOfTheWeek = array('Maandag','Dingsdag','Middeweeken','Dünnersdag','Freedag','Sünnabend','Sünndag');
+  $daysOfTheWeek = array('Mo','Di','Mi','Do','Fr','Sa','So');
   // erster Tag des Monats
   $firstDayOfMonth = mktime(0,0,0,$month,1,$year);
   // Anzahl der Tage des Monats (28, 29, 30 oder 31)
@@ -26,35 +23,6 @@ function showCalender($month, $year) {
   $dayOfTheWeek = $dateCoponent['wday'];
   // heutiges Datum
   $dateToday = date('Y-m-d');
-
-  // DB handler
-  $connection = mysqli_connect($database_host, $database_user, $database_pass);
-  $db = mysqli_select_db($connection, $database_name);
-  mysqli_set_charset($connection, "utf8");
-
-  // bereits gebuchte termine aus DB lesen
-  $bookings = array();
-
-  $query = "SELECT backtermin FROM backtermine WHERE storniert!='1'";
-  $runQuery = mysqli_query($connection, $query);
-
-  if ($runQuery) {
-    foreach ( $runQuery as $row ) {
-      $bookings[] = $row["backtermin"];
-    }
-  } 
-
-  // bereits stornierte termine aus DB lesen
-  $deleted = array();
-
-  $query = "SELECT backtermin FROM backtermine WHERE storniert='1'";
-  $runQuery = mysqli_query($connection, $query);
-
-  if ($runQuery) {
-    foreach ( $runQuery as $row ) {
-      $deleted[] = $row["backtermin"];
-    }
-  } 
 
   // HTML table fuer Ausgabe
   $calender = "<center><h1>" . $monthName . ", " . $year . "   " . $month . "</h1></center><br>";
@@ -70,7 +38,7 @@ function showCalender($month, $year) {
   $calender .= "<table class='table table-bordered'>";
   $calender .= "<tr>";
   foreach ($daysOfTheWeek as $day) {
-    $calender .= "<th class='header'>" . $day . "</th>";
+    $calender .= "<th class='header'><h4>" . $day . "</h4></th>";
   }
   $calender .= "</tr>";
 
@@ -102,44 +70,157 @@ function showCalender($month, $year) {
     }
     $calender .= "<h4>" . $dayCountStr . "</h4>";
 
-    // wurde der Tag gebucht?
-    if ( in_array("$year-$month-$dayCountStr", $bookings) ) {
 
-      // lese aus DB welche Gruppe den Termin gebucht hat
-      $query = "SELECT backgruppeName FROM backtermine WHERE backtermin=" . "'$year-$month-$dayCountStr'" . "and storniert!='1'";
-      $runQuery = mysqli_query($connection, $query);
-      if ( $result = $runQuery->fetch_row() ) {
+    $newBookingDay = new BookingDay();
+    $newBookingDay->setBacktermin("$year-$month-$dayCountStr");
 
+    // Button Logic Baum 
+    // Gibt es aktuell gueltige Buchung? ja/nein   
+    if ( $newBookingDay->getGebuchtFromDB() ) {
+    
+      // wurde der ganze Tag von einer Gruppe gebucht?
+      if ( in_array("ganzerTag", array_keys($newBookingDay->getSlot())) ) {
+
+        $grpName = $newBookingDay->getSlot()["ganzerTag"];
+        $slot = "ganzerTag";
         // Tag in der Vergangenheit?
         if ( "$year-$month-$dayCountStr" < $dateToday ) {
-          $calender .= "<button class='btn btn-info btn-xs' data-toggle='modal' disabled>" . $result[0] . "</button>";
+          $calender .= "<button class='btn btn-info btn-xs' style='font-size: 1vw' data-toggle='modal' disabled>" . $grpName . "</button>";
         } else {
-          $calender .= "<button class='btn btn-info btn-xs' data-toggle='modal' data-target='#deleteModal' data-request='$year-$month-$dayCountStr' data-gruppe='$result[0]'>" . $result[0] . "</button>";
+          $calender .= "<button class='btn btn-info btn-xs' style='font-size: 1vw' data-toggle='modal' data-target='#deleteModal' data-request='$year-$month-$dayCountStr' data-gruppe='$grpName' data-slot='$slot'>" . $grpName . "</button>";
+        }
+
+      } else if ( in_array("morgen", array_keys($newBookingDay->getSlot())) ) {
+
+        // morgens besetzt durch grupppe
+        // mittags frei?
+        if ( in_array("nachmittag", array_keys($newBookingDay->getSlot())) ) {
+
+          // morgen und nachmittag besetzt durch gruppe
+          $grpName = $newBookingDay->getSlot()["morgen"];
+          $slot = "morgen";
+          // Tag in der Vergangenheit?
+          if ( "$year-$month-$dayCountStr" < $dateToday ) {
+            $calender .= "<button class='btn btn-info btn-xs' style='font-size: 1vw' data-toggle='modal' disabled>" . $grpName . "</button>";
+          } else {
+            $calender .= "<button class='btn btn-info btn-xs' style='font-size: 1vw' data-toggle='modal' data-target='#deleteModal' data-request='$year-$month-$dayCountStr' data-gruppe='$grpName' data-slot='$slot'>" . $grpName . "</button>";
+          }
+
+          // neue Zeile, dann Nachmittaggruppe
+          $calender .= "<br><br>";
+
+          $grpName = $newBookingDay->getSlot()["nachmittag"];
+          $slot = "nachmittag";
+          // Tag in der Vergangenheit?
+          if ( "$year-$month-$dayCountStr" < $dateToday ) {
+            $calender .= "<button class='btn btn-info btn-xs' style='font-size: 1vw' data-toggle='modal' disabled>" . $grpName . "</button>";
+          } else {
+            $calender .= "<button class='btn btn-info btn-xs' style='font-size: 1vw' data-toggle='modal' data-target='#deleteModal' data-request='$year-$month-$dayCountStr' data-gruppe='$grpName' data-slot='$slot'>" . $grpName . "</button>";
+          }
+
+        } else {
+
+          // morgen besetzt durch gruppe, nachmittag frei
+          $grpName = $newBookingDay->getSlot()["morgen"];
+          $slot = "morgen";
+          // Tag in der Vergangenheit?
+          if ( "$year-$month-$dayCountStr" < $dateToday ) {
+            $calender .= "<button class='btn btn-info btn-xs' style='font-size: 1vw' data-toggle='modal' disabled>" . $grpName . "</button>";
+          } else {
+            $calender .= "<button class='btn btn-info btn-xs' style='font-size: 1vw' data-toggle='modal' data-target='#deleteModal' data-request='$year-$month-$dayCountStr' data-gruppe='$grpName' data-slot='$slot'>" . $grpName . "</button>";
+          }
+
+          // neue Zeile, dann nachmittag frei
+          $calender .= "<br><br>";
+          $slot = "nachmittag";
+
+          // termin nachmittag bereits einmal storniert?
+          if ( $newBookingDay->getStorniertFromDB("nachmittag") ) {
+
+            // Tag in der Vergangenheit?
+            if ( "$year-$month-$dayCountStr" < $dateToday ) {
+              $calender .= "<button class='btn btn-warning btn-xs' style='font-size: 1vw' disabled>Morgens wieder frei</button>";
+            } else {
+              $calender .= "<button class='btn btn-warning btn-xs' style='font-size: 1vw' data-toggle='modal' data-target='#bookingModalFixedSlot' data-request='$year-$month-$dayCountStr' data-slot='$slot'>wieder frei</button>";
+            }
+
+          } else {
+
+            // Tag in der Vergangenheit?
+            if ( "$year-$month-$dayCountStr" < $dateToday ) {
+              $calender .= "<button class='btn btn-success btn-xs' style='font-size: 1vw' disabled>Morgens frei</button>";
+            } else {
+              $calender .= "<button class='btn btn-success btn-xs' style='font-size: 1vw' data-toggle='modal' data-target='#bookingModalFixedSlot' data-request='$year-$month-$dayCountStr' data-slot='$slot'>frei</button>";
+            }
+
+          }
+
+        }
+
+      } else {
+
+        // termin nachmittags muss gebucht sein, morgens frei
+        $slot = "morgen";
+        // termin morgnens bereits einmal storniert?
+        if ( $newBookingDay->getStorniertFromDB("morgen") ) {
+
+          // Tag in der Vergangenheit?
+          if ( "$year-$month-$dayCountStr" < $dateToday ) {
+            $calender .= "<button class='btn btn-warning btn-xs' style='font-size: 1vw' disabled>wieder frei</button>";
+          } else {
+            $calender .= "<button class='btn btn-warning btn-xs' style='font-size: 1vw' data-toggle='modal' data-target='#bookingModalFixedSlot' data-request='$year-$month-$dayCountStr' data-slot='$slot'>wieder frei</button>";
+          }
+
+        } else {
+
+          // Tag in der Vergangenheit?
+          if ( "$year-$month-$dayCountStr" < $dateToday ) {
+            $calender .= "<button class='btn btn-success btn-xs' style='font-size: 1vw' disabled>frei</button>";
+          } else {
+            $calender .= "<button class='btn btn-success btn-xs' style='font-size: 1vw' data-toggle='modal' data-target='#bookingModalFixedSlot' data-request='$year-$month-$dayCountStr' data-slot='$slot'>frei</button>";
+          }
+
+        }
+
+        // neue Zeile, dann nachmittag gebucht durch gruppe
+        $calender .= "<br><br>";
+
+        $grpName = $newBookingDay->getSlot()["nachmittag"];
+        $slot = "nachmittag";
+        // Tag in der Vergangenheit?
+        if ( "$year-$month-$dayCountStr" < $dateToday ) {
+          $calender .= "<button class='btn btn-info btn-xs' style='font-size: 1vw' data-toggle='modal' disabled>" . $grpName . "</button>";
+        } else {
+          $calender .= "<button class='btn btn-info btn-xs' style='font-size: 1vw' data-toggle='modal' data-target='#deleteModal' data-request='$year-$month-$dayCountStr' data-gruppe='$slot' data-slot='$slot'>" . $grpName . "</button>";
         }
 
       }
+
     } else {
 
-      // wurde der Tag bereits einmal storniert?
-      if ( in_array("$year-$month-$dayCountStr", $deleted) ) {
- 
+      // wurde der Tag zuvor einmal storniert?
+      if ( $newBookingDay->getStorniertFromDB() ) {
+
         // Tag in der Vergangenheit?
         if ( "$year-$month-$dayCountStr" < $dateToday ) {
-          $calender .= "<button class='btn btn-warning btn-xs' disabled>wieder frei</button>";
+          $calender .= "<button class='btn btn-warning btn-xs' style='font-size: 1vw' disabled>wieder frei</button>";
         } else {
-          $calender .= "<button class='btn btn-warning btn-xs' data-toggle='modal' data-target='#bookingModal' data-request='$year-$month-$dayCountStr'>wieder frei</button>";
+          $calender .= "<button class='btn btn-warning btn-xs' style='font-size: 1vw' data-toggle='modal' data-target='#bookingModal' data-request='$year-$month-$dayCountStr'>wieder frei</button>";
         }
 
       } else {
 
         // Tag in der Vergangenheit?
         if ( "$year-$month-$dayCountStr" < $dateToday ) {
-          $calender .= "<button class='btn btn-success btn-xs' disabled>frei</button>";
+          $calender .= "<button class='btn btn-success btn-xs' style='font-size: 1vw' disabled>frei</button>";
         } else {
-          $calender .= "<button class='btn btn-success btn-xs' data-toggle='modal' data-target='#bookingModal' data-request='$year-$month-$dayCountStr'>frei</button>";
+          $calender .= "<button class='btn btn-success btn-xs' style='font-size: 1vw' data-toggle='modal' data-target='#bookingModal' data-request='$year-$month-$dayCountStr'>frei</button>";
         }
+
       }
+
     }
+
     $calender .= "</td>";
 
     // wenn Sünndag erreicht, dann neue Zeile 
@@ -163,22 +244,17 @@ function showCalender($month, $year) {
 
 // liesst backgruppen aus db fuer buchungsmenue
 function fetchBackgruppen() {
-  global $database_host;
-  global $database_name;
-  global $database_user;
-  global $database_pass;
 
-  $connection = mysqli_connect($database_host, $database_user, $database_pass);
-  $db = mysqli_select_db($connection, $database_name);
-  mysqli_set_charset($connection, "utf8");
+  $connection = new Dbh();
 
   $query = "SELECT backgruppeName FROM backgruppen WHERE aktiv = '1'";
-  $runQuery = mysqli_query($connection, $query);
+  $stmt = $connection->connect()->prepare($query);
+  $stmt->execute();
 
   $backgruppenList = "";
 
-  if ($runQuery) {
-    foreach ( $runQuery as $row ) {
+  if ( $result = $stmt->fetchAll() ) {
+    foreach ( $result as $row ) {
       $backgruppenList .= "<option>" . $row["backgruppeName"] . "</option>";
     }
   } 
@@ -197,11 +273,11 @@ function fetchBackgruppen() {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <link rel="stylesheet" href="./bootstrap/css/bootstrap.min.css">
   <style>
     table{ table-layout: fixed; }
     td{ width: 33%; }
   </style>
+  <link rel="stylesheet" href="./bootstrap/css/bootstrap.min.css">
 </head>
 
 <body>
@@ -229,6 +305,60 @@ function fetchBackgruppen() {
             <div class="form-group">
               <label for="InputPassword">Passwort</label>
               <input type="password" class="form-control" name="InputPassword" placeholder="">
+            </div>
+            <div class="form-group">
+              <label for="timeslot">Wann gebucht?</label>
+              <select class="form-control" name="timeslot" placeholder="ganzer Tag">
+                <option value="ganzerTag">ganzer Tag</option>
+                <option value="morgen">nur Vormittag bis ??:?? Uhr</option>
+                <option value="nachmittag">nur Nachmittag ab ??:?? Uhr</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <input type="hidden" class="form-control requestedDate" name="requestedDate" placeholder="">
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Zurück</button>
+            <button type="submit" name="submitBookingData" class="btn btn-primary">Termin buchen</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dialog fuer Terminbuchung mit vorgegebenem Slot -->
+  <div class="modal fade" id="bookingModalFixedSlot" tabindex="-1" role="dialog" aria-labelledby="bookingModalFixedSlotLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="bookingModalFixedSlotLabel">Backtermin ?? buchen:</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form action="insertDate.php" method="POST">
+          <div class="modal-body">
+            <div class="form-group">
+              <label for="backgruppe">Backgruppe</label>
+              <select class="form-control" name="InputBackgruppe" placeholder="Backgruppe wählen">
+                <option>Bitte Backgruppe wählen</option>
+                <!-- Lese Backgruppen aus DB -->
+                <?php fetchBackgruppen(); ?>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="InputPassword">Passwort</label>
+              <input type="password" class="form-control" name="InputPassword" placeholder="">
+            </div>
+            <div class="form-group">
+              <label for="timeslot">Wann gebucht?</label>
+              <input type="hidden" class="form-control InputTimeSlot" name="timeslot" placeholder="" readonly>
+              <select class="form-control InputTimeSlot" name="timeslot" placeholder="" disabled>
+                <option value="ganzerTag">ganzer Tag</option>
+                <option value="morgen">nur Vormittag bis ??:?? Uhr</option>
+                <option value="nachmittag">nur Nachmittag ab ??:?? Uhr</option>
+              </select>
             </div>
             <div class="form-group">
               <input type="hidden" class="form-control requestedDate" name="requestedDate" placeholder="">
@@ -262,6 +392,15 @@ function fetchBackgruppen() {
             <div class="form-group">
               <label for="InputPassword">Passwort</label>
               <input type="password" class="form-control" name="InputPassword" placeholder="">
+            </div>
+            <div class="form-group">
+              <label for="timeslot">Wann gebucht?</label>
+              <input type="hidden" class="form-control InputTimeSlot" name="timeslot" placeholder="" readonly>
+              <select class="form-control InputTimeSlot" name="timeslot" placeholder="" disabled>
+                <option value="ganzerTag">ganzer Tag</option>
+                <option value="morgen">nur Morgen bis ??:?? Uhr</option>
+                <option value="nachmittag">nur Nachmittag ab ??:?? Uhr</option>
+              </select>
             </div>
             <div class="form-group">
               <input type="hidden" class="form-control requestedDate" name="requestedDate" placeholder="">
@@ -332,6 +471,24 @@ function fetchBackgruppen() {
   </script>
 
   <script>
+    // Dialog fuer Terminbuchung mit vorgegebenem Slot, Parameteruebergabe
+    $('#bookingModalFixedSlot').on('show.bs.modal', function (event) {
+      // Button der Dialog startet
+      var button = $(event.relatedTarget) 
+      // Lese Information aus data-* Attribut
+      var recipient = button.data('request') 
+      // konvertiere Parameter nach deutscher Datumskonvention
+      convertedDate = recipient[8] + recipient[9] + "." + recipient[5] + recipient[6] + "." + recipient[0] + recipient[1] + recipient[2] + recipient[3]
+      // Schreibe Parameter in Titelzeile in Modal
+      var modal = $(this)
+      modal.find('.modal-title').text('Backtermin am ' + convertedDate + ' buchen:')
+      modal.find('.modal-body .form-group .requestedDate').val(recipient)
+      var slot = button.data('slot')
+      modal.find('.modal-body .form-group .InputTimeSlot').val(slot)
+    })
+  </script>
+
+  <script>
     // Dialog fuer Stornierung, Parameteruebergabe
     $('#deleteModal').on('show.bs.modal', function (event) {
       // Button der Dialog startet
@@ -346,6 +503,8 @@ function fetchBackgruppen() {
       modal.find('.modal-body .form-group .requestedDate').val(recipient)
       var gruppe = button.data('gruppe')
       modal.find('.modal-body .form-group .Inputbackgruppe').val(gruppe)
+      var slot = button.data('slot')
+      modal.find('.modal-body .form-group .InputTimeSlot').val(slot)
     })
   </script>
 
