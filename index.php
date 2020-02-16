@@ -192,7 +192,7 @@ function showCalender($month, $year) {
         if ( "$year-$month-$dayCountStr" < $dateToday ) {
           $calender .= "<button class='btn btn-info btn-xs' style='font-size: 1vw' data-toggle='modal' disabled>" . $grpName . "</button>";
         } else {
-          $calender .= "<button class='btn btn-info btn-xs' style='font-size: 1vw' data-toggle='modal' data-target='#deleteModal' data-request='$year-$month-$dayCountStr' data-gruppe='$slot' data-slot='$slot'>" . $grpName . "</button>";
+          $calender .= "<button class='btn btn-info btn-xs' style='font-size: 1vw' data-toggle='modal' data-target='#deleteModal' data-request='$year-$month-$dayCountStr' data-gruppe='$grpName' data-slot='$slot'>" . $grpName . "</button>";
         }
 
       }
