@@ -343,7 +343,7 @@ function fetchBackgruppen() {
             <div class="form-group">
               <label for="backgruppe">Backgruppe</label>
               <select class="form-control" name="InputBackgruppe" placeholder="Backgruppe wählen">
-                <option>Bitte Backgruppe wählen</option>
+                <option value="0">Bitte Backgruppe wählen</option>
                 <!-- Lese Backgruppen aus DB -->
                 <?php fetchBackgruppen(); ?>
               </select>
