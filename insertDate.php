@@ -16,52 +16,61 @@ if ( isset($_POST["submitBookingData"]) ) {
 
   echo var_dump($year);
   echo var_dump($month);
+  echo var_dump($backgruppe);
 
-  // lese Passwort der Backgruppe aus Datenbank
-  $sql = "SELECT passwort FROM backgruppen WHERE backgruppeName = ?";
-  $stmt = $connection->connect()->prepare($sql);
-  $stmt->execute( [$backgruppe] );
+  // pruefe ob backgruppe gewaehlt
+  if ( $backgruppe == "0" ) {
+    // Passwort wurde falsch eingegeben
+    echo "<script> alert('Fehler: Bitte Backgruppe w&auml;hlen'); </script>";
+    header("Location: index.php?month=" . $month . "&year=" . $year . "&msg=<div class='alert alert-danger' role='alert'>Fehler: Bitte Backgruppe wählen.</div>");
+  } else {
 
-  if ( $result = $stmt->fetchAll() ) {
-    $passwordFromDb = $result[0]["passwort"]; 
+    // lese Passwort der Backgruppe aus Datenbank
+    $sql = "SELECT passwort FROM backgruppen WHERE backgruppeName = ?";
+    $stmt = $connection->connect()->prepare($sql);
+    $stmt->execute( [$backgruppe] );
 
-    // pruefe ob passwort richtig eingegeben wurde
-    if ( $password==$passwordFromDb ) {
+    if ( $result = $stmt->fetchAll() ) {
+      $passwordFromDb = $result[0]["passwort"]; 
 
-      // pruefe ob termin bereits gebucht wurde
-      $sql = "SELECT backtermin FROM backtermine WHERE storniert!='ja' AND slot = ?";
-      $stmt = $connection->connect()->prepare($sql);
-      $stmt->execute( [$requestedSlot] );
+      // pruefe ob passwort richtig eingegeben wurde
+      if ( $password==$passwordFromDb ) {
 
-      if ($result = $stmt->fetchAll()) {
-        foreach ( $result as $row ) {
-          $bookings[] = $row["backtermin"];
-        }
-      } 
+        // pruefe ob termin bereits gebucht wurde
+        $sql = "SELECT backtermin FROM backtermine WHERE storniert!='ja' AND slot = ?";
+        $stmt = $connection->connect()->prepare($sql);
+        $stmt->execute( [$requestedSlot] );
 
-      if ( !in_array($requestedDate, $bookings) ) {
-        // Termin ist noch frei und wird gebucht
+        if ($result = $stmt->fetchAll()) {
+          foreach ( $result as $row ) {
+            $bookings[] = $row["backtermin"];
+          }
+        } 
 
-        // angefragter backtermin in DB speichern
-        //$newQuery = "INSERT INTO backtermine (id,backgruppeName,backtermin,storniert) VALUES (NULL,'" . $backgruppe . "','" . $requestedDate . "','0')";
-        $newQuery = "INSERT INTO backtermine (id,backgruppeName,backtermin,storniert,slot) VALUES (NULL,:backgruppe,:requestedDate,'nein',:slot)";
-        $newStmt = $connection->connect()->prepare($newQuery);
-        $newStmt->execute( array("backgruppe" => $backgruppe, "requestedDate" => $requestedDate, "slot" => $requestedSlot) );
-        if ($newStmt) {
-          echo "<script> alert('Backtermin gespeichert'); </script>";
-          header("Location: index.php?month=" . $month . "&year=" . $year . "&msg=<div class='alert alert-success' role='alert'>Backtermin erfolgreich eingetragen.</div>");
+        if ( !in_array($requestedDate, $bookings) ) {
+          // Termin ist noch frei und wird gebucht
+
+          // angefragter backtermin in DB speichern
+          //$newQuery = "INSERT INTO backtermine (id,backgruppeName,backtermin,storniert) VALUES (NULL,'" . $backgruppe . "','" . $requestedDate . "','0')";
+          $newQuery = "INSERT INTO backtermine (id,backgruppeName,backtermin,storniert,slot) VALUES (NULL,:backgruppe,:requestedDate,'nein',:slot)";
+          $newStmt = $connection->connect()->prepare($newQuery);
+          $newStmt->execute( array("backgruppe" => $backgruppe, "requestedDate" => $requestedDate, "slot" => $requestedSlot) );
+          if ($newStmt) {
+            echo "<script> alert('Backtermin gespeichert'); </script>";
+            header("Location: index.php?month=" . $month . "&year=" . $year . "&msg=<div class='alert alert-success' role='alert'>Backtermin erfolgreich eingetragen.</div>");
+          }
+
+        } else {
+          // Termin ist bereits gebucht
+          echo "<script> alert('Fehler: Termin ist bereits gebucht'); </script>";
+          header("Location: index.php?month=" . $month . "&year=" . $year . "&msg=<div class='alert alert-danger' role='alert'>Fehler: Der Termin ist bereits vergeben.</div>");
         }
 
       } else {
-        // Termin ist bereits gebucht
-        echo "<script> alert('Fehler: Termin ist bereits gebucht'); </script>";
-        header("Location: index.php?month=" . $month . "&year=" . $year . "&msg=<div class='alert alert-danger' role='alert'>Fehler: Der Termin ist bereits vergeben.</div>");
+        // Passwort wurde falsch eingegeben
+        echo "<script> alert('Fehler: falsches Passwort'); </script>";
+        header("Location: index.php?month=" . $month . "&year=" . $year . "&msg=<div class='alert alert-danger' role='alert'>Fehler: Sie haben das falsche Passwort eingegeben.</div>");
       }
-
-    } else {
-      // Passwort wurde falsch eingegeben
-      echo "<script> alert('Fehler: falsches Passwort'); </script>";
-      header("Location: index.php?month=" . $month . "&year=" . $year . "&msg=<div class='alert alert-danger' role='alert'>Fehler: Sie haben das falsche Passwort eingegeben.</div>");
     }
   }
 
