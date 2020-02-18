@@ -283,6 +283,42 @@ function fetchBackgruppen() {
 
 <body>
 
+  <!-- Dialog fuer Erklaerung der Farben (Legende) -->
+  <div class="modal hide fade" id="infoModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Legende</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p>Jeder Buchungsoption ist eine Farbe zugeordnet:</p>
+          <p>
+            <table class="table">
+              <tr>
+                <td style="width: 30%"><button class='btn btn-success btn-xs'>frei</button></td>
+                <td style="width: 65%"">... freier Termin, Sie können eine Buchung vornehmen.</td>
+              </tr>
+              <tr>
+                <td><button class='btn btn-warning btn-xs'>wieder frei</button></td>
+                <td>... der Termin wurde zuvor gebucht, dann aber wieder von der Backgruppe storniert. Sie können eine Buchung vornehmen.</td>
+              </tr>
+              <tr>
+                <td><button class='btn btn-info btn-xs'>Backgruppe</button></td>
+                <td>... der Termin wurde von der eingetragenen Backgruppe gebucht. Nur die Backgruppe kann den Termin wieder stornieren.</td>
+              </tr>
+            </table>
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Dialog fuer Terminbuchung -->
   <div class="modal fade" id="bookingModal" tabindex="-1" role="dialog" aria-labelledby="bookingModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
@@ -509,6 +545,19 @@ function fetchBackgruppen() {
     })
   </script>
 
+  <!-- InfoBox bei page load falls msg nicht gesetzt -->
+  <?php
+    if ( !isset($_GET["msg"]) & !isset($_GET["month"]) ) {
+      $script = "<script>";
+      $script .= "$(window).on('load',function(){";
+      $script .= "if(screen.width<800){";
+      $script .= "$('#infoModal').modal('show')";
+      $script .= "}})";
+      $script .= "</script>";
+      echo $script;
+    }
+  ?>
+      
 </body>
 
 </html>
