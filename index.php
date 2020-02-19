@@ -255,13 +255,12 @@ function fetchBackgruppen() {
   $backgruppenList = "";
 
   if ( $result = $stmt->fetchAll() ) {
+    // eintraege sortieren
+    asort($result);
     foreach ( $result as $row ) {
       $backgruppenList .= "<option>" . $row["backgruppeName"] . "</option>";
     }
   } 
-
-  // eintraege sortieren
-  asort($backgruppenList);
 
   echo $backgruppenList;
 }
