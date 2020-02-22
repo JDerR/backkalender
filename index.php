@@ -88,9 +88,9 @@ function showCalender($month, $year) {
         $slot = "ganzerTag";
         // Tag in der Vergangenheit?
         if ( "$year-$month-$dayCountStr" < $dateToday ) {
-          $calender .= "<button class='btn btn-info btn-xs' style='font-size: 1vw' data-toggle='modal' disabled>" . $grpName . "</button>";
+          $calender .= "<button class='btn btn-info btn-xs' style='font-size: 1vw' data-toggle='modal' disabled data-toggle='tooltip' data-placement='bottom' title='" . $grpName . "'>" . shorter($grpName) . "</button>";
         } else {
-          $calender .= "<button class='btn btn-info btn-xs' style='font-size: 1vw' data-toggle='modal' data-target='#deleteModal' data-request='$year-$month-$dayCountStr' data-gruppe='$grpName' data-slot='$slot'>" . $grpName . "</button>";
+          $calender .= "<button class='btn btn-info btn-xs' style='font-size: 1vw' data-toggle='modal' data-target='#deleteModal' data-request='$year-$month-$dayCountStr' data-gruppe='$grpName' data-slot='$slot' data-toggle='tooltip' data-placement='bottom' title='" . $grpName . "'>" . shorter($grpName) . "</button>";
         }
 
       } else if ( in_array("morgen", array_keys($newBookingDay->getSlot())) ) {
@@ -104,9 +104,9 @@ function showCalender($month, $year) {
           $slot = "morgen";
           // Tag in der Vergangenheit?
           if ( "$year-$month-$dayCountStr" < $dateToday ) {
-            $calender .= "<button class='btn btn-info btn-xs' style='font-size: 1vw' data-toggle='modal' disabled>" . $grpName . "</button>";
+            $calender .= "<button class='btn btn-info btn-xs' style='font-size: 1vw' data-toggle='modal' disabled data-toggle='tooltip' data-placement='bottom' title='" . $grpName . "'>" . shorter($grpName) . "</button>";
           } else {
-            $calender .= "<button class='btn btn-info btn-xs' style='font-size: 1vw' data-toggle='modal' data-target='#deleteModal' data-request='$year-$month-$dayCountStr' data-gruppe='$grpName' data-slot='$slot'>" . $grpName . "</button>";
+            $calender .= "<button class='btn btn-info btn-xs' style='font-size: 1vw' data-toggle='modal' data-target='#deleteModal' data-request='$year-$month-$dayCountStr' data-gruppe='$grpName' data-slot='$slot' data-toggle='tooltip' data-placement='bottom' title='" . $grpName . "'>" . shorter($grpName) . "</button>";
           }
 
           // neue Zeile, dann Nachmittaggruppe
@@ -116,9 +116,9 @@ function showCalender($month, $year) {
           $slot = "nachmittag";
           // Tag in der Vergangenheit?
           if ( "$year-$month-$dayCountStr" < $dateToday ) {
-            $calender .= "<button class='btn btn-info btn-xs' style='font-size: 1vw' data-toggle='modal' disabled>" . $grpName . "</button>";
+            $calender .= "<button class='btn btn-info btn-xs' style='font-size: 1vw' data-toggle='modal' disabled data-toggle='tooltip' data-placement='bottom' title='" . $grpName . "'>" . shorter($grpName) . "</button>";
           } else {
-            $calender .= "<button class='btn btn-info btn-xs' style='font-size: 1vw' data-toggle='modal' data-target='#deleteModal' data-request='$year-$month-$dayCountStr' data-gruppe='$grpName' data-slot='$slot'>" . $grpName . "</button>";
+            $calender .= "<button class='btn btn-info btn-xs' style='font-size: 1vw' data-toggle='modal' data-target='#deleteModal' data-request='$year-$month-$dayCountStr' data-gruppe='$grpName' data-slot='$slot' data-toggle='tooltip' data-placement='bottom' title='" . $grpName . "'>" . shorter($grpName) . "</button>";
           }
 
         } else {
@@ -128,9 +128,9 @@ function showCalender($month, $year) {
           $slot = "morgen";
           // Tag in der Vergangenheit?
           if ( "$year-$month-$dayCountStr" < $dateToday ) {
-            $calender .= "<button class='btn btn-info btn-xs' style='font-size: 1vw' data-toggle='modal' disabled>" . $grpName . "</button>";
+            $calender .= "<button class='btn btn-info btn-xs' style='font-size: 1vw' data-toggle='modal' disabled data-toggle='tooltip' data-placement='bottom' title='" . $grpName . "'>" . shorter($grpName) . "</button>";
           } else {
-            $calender .= "<button class='btn btn-info btn-xs' style='font-size: 1vw' data-toggle='modal' data-target='#deleteModal' data-request='$year-$month-$dayCountStr' data-gruppe='$grpName' data-slot='$slot'>" . $grpName . "</button>";
+            $calender .= "<button class='btn btn-info btn-xs' style='font-size: 1vw' data-toggle='modal' data-target='#deleteModal' data-request='$year-$month-$dayCountStr' data-gruppe='$grpName' data-slot='$slot' data-toggle='tooltip' data-placement='bottom' title='" . $grpName . "'>" . shorter($grpName) . "</button>";
           }
 
           // neue Zeile, dann nachmittag frei
@@ -142,7 +142,7 @@ function showCalender($month, $year) {
 
             // Tag in der Vergangenheit?
             if ( "$year-$month-$dayCountStr" < $dateToday ) {
-              $calender .= "<button class='btn btn-warning btn-xs' style='font-size: 1vw' disabled>Morgens wieder frei</button>";
+              $calender .= "<button class='btn btn-warning btn-xs' style='font-size: 1vw' disabled>wieder frei</button>";
             } else {
               $calender .= "<button class='btn btn-warning btn-xs' style='font-size: 1vw' data-toggle='modal' data-target='#bookingModalFixedSlot' data-request='$year-$month-$dayCountStr' data-slot='$slot'>wieder frei</button>";
             }
@@ -151,7 +151,7 @@ function showCalender($month, $year) {
 
             // Tag in der Vergangenheit?
             if ( "$year-$month-$dayCountStr" < $dateToday ) {
-              $calender .= "<button class='btn btn-success btn-xs' style='font-size: 1vw' disabled>Morgens frei</button>";
+              $calender .= "<button class='btn btn-success btn-xs' style='font-size: 1vw' disabled>frei</button>";
             } else {
               $calender .= "<button class='btn btn-success btn-xs' style='font-size: 1vw' data-toggle='modal' data-target='#bookingModalFixedSlot' data-request='$year-$month-$dayCountStr' data-slot='$slot'>frei</button>";
             }
@@ -192,9 +192,9 @@ function showCalender($month, $year) {
         $slot = "nachmittag";
         // Tag in der Vergangenheit?
         if ( "$year-$month-$dayCountStr" < $dateToday ) {
-          $calender .= "<button class='btn btn-info btn-xs' style='font-size: 1vw' data-toggle='modal' disabled>" . $grpName . "</button>";
+          $calender .= "<button class='btn btn-info btn-xs' style='font-size: 1vw' data-toggle='modal' disabled data-toggle='tooltip' data-placement='bottom' title='" . $grpName . "'>" . shorter($grpName) . "</button>";
         } else {
-          $calender .= "<button class='btn btn-info btn-xs' style='font-size: 1vw' data-toggle='modal' data-target='#deleteModal' data-request='$year-$month-$dayCountStr' data-gruppe='$grpName' data-slot='$slot'>" . $grpName . "</button>";
+          $calender .= "<button class='btn btn-info btn-xs' style='font-size: 1vw' data-toggle='modal' data-target='#deleteModal' data-request='$year-$month-$dayCountStr' data-gruppe='$grpName' data-slot='$slot' data-toggle='tooltip' data-placement='bottom' title='" . $grpName . "'>" . shorter($grpName) . "</button>";
         }
 
       }
@@ -265,6 +265,16 @@ function fetchBackgruppen() {
   } 
 
   echo $backgruppenList;
+}
+
+
+// kuerzt string falls zu lang
+function shorter( $str ) {
+  if ( strlen($str)>12 ) {
+    return substr( $str, 0, 9 ) . "...";
+  } else {
+    return $str;
+  }
 }
 
 ?>
