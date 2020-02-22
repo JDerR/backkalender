@@ -25,6 +25,10 @@ if ( isset($_POST["submitBookingData"]) ) {
     // pruefe ob passwort richtig eingegeben wurde
     if ( $password==$passwordFromDb ) {
 
+      // schreibe PW und Gruppe in session-cookie
+      $_SESSION["password"] = $password;
+      $_SESSION["backgruppe"] = $backgruppe;
+
       // beim angefragten backtermin "storniert" auf Wert 1 setzen
       $newQuery = "UPDATE backtermine SET storniert = 'ja' WHERE backtermin = :requestedDate AND slot = :slot";
       $newStmt = $connection->connect()->prepare($newQuery);
@@ -32,12 +36,12 @@ if ( isset($_POST["submitBookingData"]) ) {
       if ( $newStmt->execute( array("requestedDate" => $requestedDate, "slot" => $requestedSlot) ) ) {
 
         echo "<script> alert('Backtermin storniert'); </script>";
-        header("Location: index.php?month=" . $month . "&year=" . $year . "&msg=<div class='alert alert-success' role='alert'>Backtermin erfolgreich storniert.</div>");
+        header("Location: index.php?month=" . $month . "&year=" . $year . "&msg=successDelete");
       }
 
     } else {
       echo "<script> alert('Fehler: falsches Passwort'); </script>";
-      header("Location: index.php?month=" . $month . "&year=" . $year . "&msg=<div class='alert alert-danger' role='alert'>Fehler: Sie haben das falsche Passwort eingegeben.</div>");
+      header("Location: index.php?month=" . $month . "&year=" . $year . "&msg=failPW");
     }
   }
 

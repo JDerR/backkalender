@@ -2,6 +2,8 @@
 
 header("Content-Type: text/html; charset=UTF-8");
 
+session_start();
+
 require("dbh.class.php"); 
 require("bookingDay.class.php");
 
@@ -318,6 +320,32 @@ function fetchBackgruppen() {
     </div>
   </div>
 
+  <!-- Passwort speichern Dialog -->
+  <div class="modal hide fade" id="pwModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Passwort speichern?</h5>
+        </div>
+        <form action="cookieHandling.php" method="POST">
+          <div class="modal-body">
+            <p>Wollen Sie das Passwort speichern? </p>
+            <p class="text-danger">Achtung: Diese Option verwendet <b  data-toggle="tooltip" data-placement="bottom" title="Cookies sind kleine Dateien mit denen ein Nutzer idetifiziert werden kann und in diesem Fall nichts, was im Backhaus gebacken wird!">Cookies</b>.</p>
+            <div class="form-group">
+              <input type="hidden" class="form-control InputYear" name="year" placeholder="">
+              <input type="hidden" class="form-control InputMonth" name="month" placeholder="">
+              <input type="hidden" class="form-control InputMsg" name="msg" placeholder="">
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-primary" name="acceptCookie">Ja, Weiter mit Cookies</button>
+            <button type="submit" class="btn btn-secondary" name="deleteCookie">Nein</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <!-- Dialog fuer Terminbuchung -->
   <div class="modal fade" id="bookingModal" tabindex="-1" role="dialog" aria-labelledby="bookingModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
@@ -332,7 +360,7 @@ function fetchBackgruppen() {
           <div class="modal-body">
             <div class="form-group">
               <label for="backgruppe">Backgruppe</label>
-              <select class="form-control" name="InputBackgruppe" placeholder="Backgruppe wählen">
+              <select class="form-control InputBackgruppe" name="InputBackgruppe" placeholder="Backgruppe wählen">
                 <option value="0">Bitte Backgruppe wählen</option>
                 <!-- Lese Backgruppen aus DB -->
                 <?php fetchBackgruppen(); ?>
@@ -340,7 +368,7 @@ function fetchBackgruppen() {
             </div>
             <div class="form-group">
               <label for="InputPassword">Passwort</label>
-              <input type="password" class="form-control" name="InputPassword" placeholder="">
+              <input type="password" class="form-control InputPassword" name="InputPassword" placeholder="">
             </div>
             <div class="form-group">
               <label for="timeslot">Wann gebucht?</label>
@@ -377,7 +405,7 @@ function fetchBackgruppen() {
           <div class="modal-body">
             <div class="form-group">
               <label for="backgruppe">Backgruppe</label>
-              <select class="form-control" name="InputBackgruppe" placeholder="Backgruppe wählen">
+              <select class="form-control InputBackgruppe" name="InputBackgruppe" placeholder="Backgruppe wählen">
                 <option value="0">Bitte Backgruppe wählen</option>
                 <!-- Lese Backgruppen aus DB -->
                 <?php fetchBackgruppen(); ?>
@@ -385,7 +413,7 @@ function fetchBackgruppen() {
             </div>
             <div class="form-group">
               <label for="InputPassword">Passwort</label>
-              <input type="password" class="form-control" name="InputPassword" placeholder="">
+              <input type="password" class="form-control InputPassword" name="InputPassword" placeholder="">
             </div>
             <div class="form-group">
               <label for="timeslot">Wann gebucht?</label>
@@ -427,7 +455,7 @@ function fetchBackgruppen() {
             </div>
             <div class="form-group">
               <label for="InputPassword">Passwort</label>
-              <input type="password" class="form-control" name="InputPassword" placeholder="">
+              <input type="password" class="form-control InputPassword" name="InputPassword" placeholder="">
             </div>
             <div class="form-group">
               <label for="timeslot">Wann gebucht?</label>
@@ -479,7 +507,17 @@ function fetchBackgruppen() {
       <div class="col-md-12">
         <?php
           if( isset($_GET["msg"]) ) {
-            echo $_GET["msg"];
+            if ( $_GET["msg"] == "successInsert" ) {
+              echo "<div class='alert alert-success' role='alert'>Backtermin erfolgreich eingetragen.</div>";
+            } else if ( $_GET["msg"] == "failInsert" ) {
+              echo "<div class='alert alert-danger' role='alert'>Fehler: Der Termin ist bereits vergeben.</div>";
+            } else if ( $_GET["msg"] == "failPW" ) {
+              echo "<div class='alert alert-danger' role='alert'>Fehler: Sie haben das falsche Passwort eingegeben.</div>";
+            } else if ( $_GET["msg"] == "successDelete" ) {
+              echo "<div class='alert alert-success' role='alert'>Backtermin erfolgreich storniert.</div>";
+            } else if ( $_GET["msg"] == "failBackgruppe" ) {
+              echo "<div class='alert alert-danger' role='alert'>Fehler: Bitte Backgruppe wählen.</div>";
+            }
           }
         ?>
       </div>
@@ -555,6 +593,34 @@ function fetchBackgruppen() {
       $script .= "</script>";
       echo $script;
     }
+  ?>
+
+  <!-- InfoBox bei page load falls session cookie gesetzt aber kein einverstaendnis sonst PW felder fuellen -->
+  <?php
+    $script = "<script>";
+    $script .= "$(window).on('load',function(){";
+    if ( isset($_SESSION["password"]) & !isset($_SESSION["einv"]) ) {
+      $script .= "$('#pwModal').modal('show');";
+      // falls gesetzt werte ueber hidden fields mitgeben
+      if ( isset($_GET["year"]) & isset($_GET["month"]) & isset($_GET["msg"]) ) {
+        echo $_GET["year"];
+        $script .= "$('#pwModal').find('.modal-body .form-group .InputYear').val('" . $_GET["year"] . "');";
+        $script .= "$('#pwModal').find('.modal-body .form-group .InputMonth').val('" . $_GET["month"] . "');";
+        $script .= "$('#pwModal').find('.modal-body .form-group .InputMsg').val('" . $_GET["msg"] . "');";
+      }
+    } else if ( isset($_SESSION["password"]) & isset($_SESSION["einv"]) ) {
+      // Passwort setzen
+      $script .= "$('#bookingModal').find('.modal-body .form-group .InputPassword').val('" . $_SESSION["password"] . "');";
+      $script .= "$('#bookingModalFixedSlot').find('.modal-body .form-group .InputPassword').val('" . $_SESSION["password"] . "');";
+      $script .= "$('#deleteModal').find('.modal-body .form-group .InputPassword').val('" . $_SESSION["password"] . "');";
+      // Backgruppe setzen
+      $script .= "$('#bookingModal').find('.modal-body .form-group .Inputbackgruppe').val('" . $_SESSION["backgruppe"] . "');";
+      $script .= "$('#bookingModalFixedSlot').find('.modal-body .form-group .Inputbackgruppe').val('" . $_SESSION["backgruppe"] . "');";
+      $script .= "$('#deleteModal').find('.modal-body .form-group .Inputbackgruppe').val('" . $_SESSION["backgruppe"] . "');";
+    }
+    $script .= "});";
+    $script .= "</script>";
+    echo $script;
   ?>
       
 </body>

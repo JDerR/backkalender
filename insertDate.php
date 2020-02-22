@@ -1,5 +1,7 @@
 <?php
 
+session_start();
+
 require_once("dbh.class.php"); 
 
 $connection = new Dbh();
@@ -22,7 +24,7 @@ if ( isset($_POST["submitBookingData"]) ) {
   if ( $backgruppe == "0" ) {
     // Passwort wurde falsch eingegeben
     echo "<script> alert('Fehler: Bitte Backgruppe w&auml;hlen'); </script>";
-    header("Location: index.php?month=" . $month . "&year=" . $year . "&msg=<div class='alert alert-danger' role='alert'>Fehler: Bitte Backgruppe wählen.</div>");
+    header("Location: index.php?month=" . $month . "&year=" . $year . "&msg=failBackgruppe");
   } else {
 
     // lese Passwort der Backgruppe aus Datenbank
@@ -35,6 +37,10 @@ if ( isset($_POST["submitBookingData"]) ) {
 
       // pruefe ob passwort richtig eingegeben wurde
       if ( $password==$passwordFromDb ) {
+
+        // schreibe PW und Gruppe in session-cookie
+        $_SESSION["password"] = $password;
+        $_SESSION["backgruppe"] = $backgruppe;
 
         // pruefe ob termin bereits gebucht wurde
         $sql = "SELECT backtermin FROM backtermine WHERE storniert!='ja' AND slot = ?";
@@ -57,19 +63,19 @@ if ( isset($_POST["submitBookingData"]) ) {
           $newStmt->execute( array("backgruppe" => $backgruppe, "requestedDate" => $requestedDate, "slot" => $requestedSlot) );
           if ($newStmt) {
             echo "<script> alert('Backtermin gespeichert'); </script>";
-            header("Location: index.php?month=" . $month . "&year=" . $year . "&msg=<div class='alert alert-success' role='alert'>Backtermin erfolgreich eingetragen.</div>");
+            header("Location: index.php?month=" . $month . "&year=" . $year . "&msg=successInsert");
           }
 
         } else {
           // Termin ist bereits gebucht
           echo "<script> alert('Fehler: Termin ist bereits gebucht'); </script>";
-          header("Location: index.php?month=" . $month . "&year=" . $year . "&msg=<div class='alert alert-danger' role='alert'>Fehler: Der Termin ist bereits vergeben.</div>");
+          header("Location: index.php?month=" . $month . "&year=" . $year . "&msg=failInsert");
         }
 
       } else {
         // Passwort wurde falsch eingegeben
         echo "<script> alert('Fehler: falsches Passwort'); </script>";
-        header("Location: index.php?month=" . $month . "&year=" . $year . "&msg=<div class='alert alert-danger' role='alert'>Fehler: Sie haben das falsche Passwort eingegeben.</div>");
+        header("Location: index.php?month=" . $month . "&year=" . $year . "&msg=failPW");
       }
     }
   }
