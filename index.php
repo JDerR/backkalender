@@ -523,6 +523,8 @@ function shorter( $str ) {
               echo "<div class='alert alert-danger' role='alert'>Fehler: Der Termin ist bereits vergeben.</div>";
             } else if ( $_GET["msg"] == "failPW" ) {
               echo "<div class='alert alert-danger' role='alert'>Fehler: Sie haben das falsche Passwort eingegeben.</div>";
+            } else if ( $_GET["msg"] == "failToMany" ) {
+              echo "<div class='alert alert-danger' role='alert'>Fehler: Es wurden bereits zu viele Termine gebucht.</div>";
             } else if ( $_GET["msg"] == "successDelete" ) {
               echo "<div class='alert alert-success' role='alert'>Backtermin erfolgreich storniert.</div>";
             } else if ( $_GET["msg"] == "failBackgruppe" ) {

@@ -16,13 +16,13 @@ if ( isset($_POST["submitBookingData"]) ) {
   $year = date("Y", strtotime($requestedDate));
   $month = date("m", strtotime($requestedDate));
 
-  echo var_dump($year);
-  echo var_dump($month);
-  echo var_dump($backgruppe);
+  var_dump($year);
+  var_dump($month);
+  var_dump($backgruppe);
 
   // pruefe ob backgruppe gewaehlt
   if ( $backgruppe == "0" ) {
-    // Passwort wurde falsch eingegeben
+    // keine Backgruppe gewaehlt
     echo "<script> alert('Fehler: Bitte Backgruppe w&auml;hlen'); </script>";
     header("Location: index.php?month=" . $month . "&year=" . $year . "&msg=failBackgruppe");
   } else {
@@ -42,6 +42,33 @@ if ( isset($_POST["submitBookingData"]) ) {
         $_SESSION["password"] = $password;
         $_SESSION["backgruppe"] = $backgruppe;
 
+        // lese backgruppen type
+        $sql = "SELECT type FROM backgruppen WHERE backgruppeName = ?";
+        $stmt = $connection->connect()->prepare($sql);
+        $stmt->execute( [$backgruppe] );
+        $result = $stmt->fetchAll();
+        $backkgruppenType = $result[0]["type"]; 
+
+        // lese anzahl der gebuchten termine innerhalb des laufenden jahres
+        $sql = "SELECT backtermin FROM backtermine WHERE backgruppeName = ? AND storniert!='ja'";
+        $stmt = $connection->connect()->prepare($sql);
+        $stmt->execute( [$backgruppe] );
+        $alleBacktermine = $stmt->fetchAll();
+        $countBacktermineImJahr = 0;
+        foreach ($alleBacktermine as $termin) {
+          $terminYear = substr($termin["backtermin"], 0, 4);
+          if ( $terminYear == $year ) {
+            $countBacktermineImJahr += 1;
+          }
+        }
+
+        // wenn zu viele termine gebucht oder backgruppentyp nicht "vorstand" dann fehler
+        if ( $countBacktermineImJahr>=6 and $backkgruppenType!="vorstand" ) {
+          echo "<script> alert('Fehler: zu viele Termine gebucht!'); </script>";
+          header("Location: index.php?month=" . $month . "&year=" . $year . "&msg=failToMany");
+          exit();
+        }
+
         // pruefe ob termin bereits gebucht wurde
         $sql = "SELECT backtermin FROM backtermine WHERE storniert!='ja' AND slot = ?";
         $stmt = $connection->connect()->prepare($sql);
@@ -56,8 +83,6 @@ if ( isset($_POST["submitBookingData"]) ) {
         if ( !in_array($requestedDate, $bookings) ) {
           // Termin ist noch frei und wird gebucht
 
-          // angefragter backtermin in DB speichern
-          //$newQuery = "INSERT INTO backtermine (id,backgruppeName,backtermin,storniert) VALUES (NULL,'" . $backgruppe . "','" . $requestedDate . "','0')";
           $newQuery = "INSERT INTO backtermine (id,backgruppeName,backtermin,storniert,slot) VALUES (NULL,:backgruppe,:requestedDate,'nein',:slot)";
           $newStmt = $connection->connect()->prepare($newQuery);
           $newStmt->execute( array("backgruppe" => $backgruppe, "requestedDate" => $requestedDate, "slot" => $requestedSlot) );
