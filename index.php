@@ -524,7 +524,7 @@ function shorter( $str ) {
             } else if ( $_GET["msg"] == "failPW" ) {
               echo "<div class='alert alert-danger' role='alert'>Fehler: Sie haben das falsche Passwort eingegeben.</div>";
             } else if ( $_GET["msg"] == "failToEarly" ) {
-              echo "<div class='alert alert-danger' role='alert'>Fehler: Dieser Termin kann erst ab dem 01.12." . $_GET["year"] . " gebucht werden.</div>";
+              echo "<div class='alert alert-danger' role='alert'>Fehler: Dieser Termin kann erst ab dem 01.12." . $_GET["year"]-1 . " gebucht werden.</div>";
             } else if ( $_GET["msg"] == "successDelete" ) {
               echo "<div class='alert alert-success' role='alert'>Backtermin erfolgreich storniert.</div>";
             } else if ( $_GET["msg"] == "failBackgruppe" ) {
