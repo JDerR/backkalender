@@ -49,23 +49,13 @@ if ( isset($_POST["submitBookingData"]) ) {
         $result = $stmt->fetchAll();
         $backkgruppenType = $result[0]["type"]; 
 
-        // lese anzahl der gebuchten termine innerhalb des laufenden jahres
-        $sql = "SELECT backtermin FROM backtermine WHERE backgruppeName = ? AND storniert!='ja'";
-        $stmt = $connection->connect()->prepare($sql);
-        $stmt->execute( [$backgruppe] );
-        $alleBacktermine = $stmt->fetchAll();
-        $countBacktermineImJahr = 0;
-        foreach ($alleBacktermine as $termin) {
-          $terminYear = substr($termin["backtermin"], 0, 4);
-          if ( $terminYear == $year ) {
-            $countBacktermineImJahr += 1;
-          }
-        }
-
-        // wenn zu viele termine gebucht oder backgruppentyp nicht "vorstand" dann fehler
-        if ( $countBacktermineImJahr>=6 and $backkgruppenType!="vorstand" ) {
-          echo "<script> alert('Fehler: zu viele Termine gebucht!'); </script>";
-          header("Location: index.php?month=" . $month . "&year=" . $year . "&msg=failToMany");
+        // wenn buchung vor dem stichtag oder backgruppentyp nicht "vorstand" dann Fehler
+        // stichtag ist jeweils der 1. Dez eines jeden Jahres
+        $dateToCompare = $year-1 . "-12-01";
+        $today = date("Y-m-d");
+        if ( $today<$dateToCompare and $backkgruppenType!="vorstand" ) {
+          echo "<script> alert('Fehler: Dieser Termin kann erst ab " . $dateToCompare . " gebucht werden.'); </script>";
+          header("Location: index.php?month=" . $month . "&year=" . $year . "&msg=failToEarly");
           exit();
         }
 
