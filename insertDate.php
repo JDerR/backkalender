@@ -12,7 +12,8 @@ if ( isset($_POST["submitBookingData"]) ) {
   $requestedDate = $_POST["requestedDate"];
   $requestedSlot = $_POST["timeslot"];
 
-  // lese aus dem angefragten datum wieder monat und jahr
+  // lese aus dem angefragten datum wieder tag, monat und jahr
+  $day = date("d", strtotime($requestedDate));
   $year = date("Y", strtotime($requestedDate));
   $month = date("m", strtotime($requestedDate));
 
@@ -50,12 +51,17 @@ if ( isset($_POST["submitBookingData"]) ) {
         $backkgruppenType = $result[0]["type"]; 
 
         // wenn buchung vor dem stichtag oder backgruppentyp nicht "vorstand" dann Fehler
-        // stichtag ist jeweils der 1. Dez eines jeden Jahres
-        $dateToCompare = $year-1 . "-12-01";
+        // stichtag ist 13 Monate in der Vergangenheit
+        if ( $month==1) {
+          $dateToCompare = strval(intval($year)-2) . "-12-" . $day;
+        } else {
+          $dateToCompare = strval(intval($year)-1) . "-" . sprintf("%'.02d", intval($month) - 1) . "-" . $day;
+        }
+
         $today = date("Y-m-d");
         if ( $today<$dateToCompare and $backkgruppenType!="vorstand" ) {
           echo "<script> alert('Fehler: Dieser Termin kann erst ab " . $dateToCompare . " gebucht werden.'); </script>";
-          header("Location: index.php?month=" . $month . "&year=" . $year . "&msg=failToEarly");
+          header("Location: index_local.php?month=" . $month . "&year=" . $year . "&msg=failToEarly");
           exit();
         }
 

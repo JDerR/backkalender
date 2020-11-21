@@ -27,6 +27,15 @@ function showCalender($month, $year) {
   // heutiges Datum
   $dateToday = date('Y-m-d');
 
+  // stichtag 13 Montate in der Vergangenheit
+  if ( $month=="01" ) {
+    $t_month = "12";
+    $t_year = strval(intval($year) - 2);
+  } else {
+    $t_month = sprintf("%'.02d", intval($month) - 1);
+    $t_year = strval(intval($year) - 1);
+  }
+
   // HTML table fuer Ausgabe
   $calender = "<center><h1>" . $monthName . " " . $year . "</h1></center><br>";
 
@@ -143,6 +152,9 @@ function showCalender($month, $year) {
             // Tag in der Vergangenheit?
             if ( "$year-$month-$dayCountStr" < $dateToday ) {
               $calender .= "<button class='btn btn-warning btn-xs' style='font-size: 1vw' disabled>wieder frei</button>";
+            // tag zu weit in der zukunft?
+            } else if ( "$t_year-$t_month-$dayCountStr" > $dateToday ) {
+              $calender .= "<button class='btn btn-danger btn-xs' style='font-size: 1vw' data-toggle='modal' data-target='#bookingModalVostand' data-request='$year-$month-$dayCountStr' data-t_request='$t_year-$t_month-$dayCountStr'>frei</button>";
             } else {
               $calender .= "<button class='btn btn-warning btn-xs' style='font-size: 1vw' data-toggle='modal' data-target='#bookingModalFixedSlot' data-request='$year-$month-$dayCountStr' data-slot='$slot'>wieder frei</button>";
             }
@@ -152,6 +164,9 @@ function showCalender($month, $year) {
             // Tag in der Vergangenheit?
             if ( "$year-$month-$dayCountStr" < $dateToday ) {
               $calender .= "<button class='btn btn-success btn-xs' style='font-size: 1vw' disabled>frei</button>";
+            // tag zu weit in der zukunft?
+            } else if ( "$t_year-$t_month-$dayCountStr" > $dateToday ) {
+              $calender .= "<button class='btn btn-danger btn-xs' style='font-size: 1vw' data-toggle='modal' data-target='#bookingModalVostand' data-request='$year-$month-$dayCountStr' data-t_request='$t_year-$t_month-$dayCountStr'>frei</button>";
             } else {
               $calender .= "<button class='btn btn-success btn-xs' style='font-size: 1vw' data-toggle='modal' data-target='#bookingModalFixedSlot' data-request='$year-$month-$dayCountStr' data-slot='$slot'>frei</button>";
             }
@@ -170,6 +185,9 @@ function showCalender($month, $year) {
           // Tag in der Vergangenheit?
           if ( "$year-$month-$dayCountStr" < $dateToday ) {
             $calender .= "<button class='btn btn-warning btn-xs' style='font-size: 1vw' disabled>wieder frei</button>";
+          // tag zu weit in der zukunft?
+          } else if ( "$t_year-$t_month-$dayCountStr" > $dateToday ) {
+            $calender .= "<button class='btn btn-danger btn-xs' style='font-size: 1vw' data-toggle='modal' data-target='#bookingModalVostand' data-request='$year-$month-$dayCountStr' data-t_request='$t_year-$t_month-$dayCountStr'>frei</button>";
           } else {
             $calender .= "<button class='btn btn-warning btn-xs' style='font-size: 1vw' data-toggle='modal' data-target='#bookingModalFixedSlot' data-request='$year-$month-$dayCountStr' data-slot='$slot'>wieder frei</button>";
           }
@@ -179,6 +197,9 @@ function showCalender($month, $year) {
           // Tag in der Vergangenheit?
           if ( "$year-$month-$dayCountStr" < $dateToday ) {
             $calender .= "<button class='btn btn-success btn-xs' style='font-size: 1vw' disabled>frei</button>";
+          // tag zu weit in der zukunft?
+          } else if ( "$t_year-$t_month-$dayCountStr" > $dateToday ) {
+            $calender .= "<button class='btn btn-danger btn-xs' style='font-size: 1vw' data-toggle='modal' data-target='#bookingModalVostand' data-request='$year-$month-$dayCountStr' data-t_request='$t_year-$t_month-$dayCountStr'>frei</button>";
           } else {
             $calender .= "<button class='btn btn-success btn-xs' style='font-size: 1vw' data-toggle='modal' data-target='#bookingModalFixedSlot' data-request='$year-$month-$dayCountStr' data-slot='$slot'>frei</button>";
           }
@@ -207,6 +228,9 @@ function showCalender($month, $year) {
         // Tag in der Vergangenheit?
         if ( "$year-$month-$dayCountStr" < $dateToday ) {
           $calender .= "<button class='btn btn-warning btn-xs' style='font-size: 1vw' disabled>wieder frei</button>";
+        // tag zu weit in der zukunft?
+        } else if ( "$t_year-$t_month-$dayCountStr" > $dateToday ) {
+          $calender .= "<button class='btn btn-danger btn-xs' style='font-size: 1vw' data-toggle='modal' data-target='#bookingModalVostand' data-request='$year-$month-$dayCountStr' data-t_request='$t_year-$t_month-$dayCountStr'>frei</button>";
         } else {
           $calender .= "<button class='btn btn-warning btn-xs' style='font-size: 1vw' data-toggle='modal' data-target='#bookingModal' data-request='$year-$month-$dayCountStr'>wieder frei</button>";
         }
@@ -216,6 +240,9 @@ function showCalender($month, $year) {
         // Tag in der Vergangenheit?
         if ( "$year-$month-$dayCountStr" < $dateToday ) {
           $calender .= "<button class='btn btn-success btn-xs' style='font-size: 1vw' disabled>frei</button>";
+        // tag zu weit in der zukunft?
+        } else if ( "$t_year-$t_month-$dayCountStr" > $dateToday ) {
+          $calender .= "<button class='btn btn-danger btn-xs' style='font-size: 1vw' data-toggle='modal' data-target='#bookingModalVostand' data-request='$year-$month-$dayCountStr' data-t_request='$t_year-$t_month-$dayCountStr'>frei</button>";
         } else {
           $calender .= "<button class='btn btn-success btn-xs' style='font-size: 1vw' data-toggle='modal' data-target='#bookingModal' data-request='$year-$month-$dayCountStr'>frei</button>";
         }
@@ -246,11 +273,15 @@ function showCalender($month, $year) {
 
 
 // liesst backgruppen aus db fuer buchungsmenue
-function fetchBackgruppen() {
+function fetchBackgruppen($vorstand=false) {
 
   $connection = new Dbh();
 
-  $query = "SELECT backgruppeName FROM backgruppen WHERE aktiv = '1'";
+  if ($vorstand==true) {
+    $query = "SELECT backgruppeName FROM backgruppen WHERE aktiv = '1' and type = 'vorstand'";
+  } else {
+    $query = "SELECT backgruppeName FROM backgruppen WHERE aktiv = '1'";
+  }
   $stmt = $connection->connect()->prepare($query);
   $stmt->execute();
 
@@ -401,6 +432,55 @@ function shorter( $str ) {
     </div>
   </div>
 
+  <!-- Dialog fuer Terminbuchung fuer Vorstand wenn Termin zu weit in der Zukunft -->
+  <div class="modal fade" id="bookingModalVostand" tabindex="-1" role="dialog" aria-labelledby="bookingModalVostandLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="bookingModalVorstandLabel">Backtermin ?? buchen:</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form action="insertDate.php" method="POST">
+          <div class="modal-body">
+            <div class="text-danger">
+              Dieser Termin kann momentan nur vom Vorstand gebucht werden. 
+              Alle &uuml;brigen Backgruppe k&ouml;nnen den Termin ab dem <b class="date">??.??.????</b> buchen.
+            </div>
+            <div class="form-group">
+              <label for="backgruppe">Backgruppe</label>
+              <select class="form-control InputBackgruppe" name="InputBackgruppe" placeholder="Backgruppe wählen">
+                <option value="0">Bitte Backgruppe wählen</option>
+                <!-- Lese Backgruppen aus DB -->
+                <?php fetchBackgruppen($vostand=true); ?>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="InputPassword">Passwort</label>
+              <input type="password" class="form-control InputPassword" name="InputPassword" placeholder="">
+            </div>
+            <div class="form-group">
+              <label for="timeslot">Wann gebucht?</label>
+              <select class="form-control" name="timeslot" placeholder="ganzer Tag">
+                <option value="ganzerTag">ganzer Tag</option>
+                <option value="morgen">nur Vormittag bis ??:?? Uhr</option>
+                <option value="nachmittag">nur Nachmittag ab ??:?? Uhr</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <input type="hidden" class="form-control requestedDate" name="requestedDate" placeholder="">
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Zurück</button>
+            <button type="submit" name="submitBookingData" class="btn btn-primary">Termin buchen</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <!-- Dialog fuer Terminbuchung mit vorgegebenem Slot -->
   <div class="modal fade" id="bookingModalFixedSlot" tabindex="-1" role="dialog" aria-labelledby="bookingModalFixedSlotLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
@@ -524,7 +604,7 @@ function shorter( $str ) {
             } else if ( $_GET["msg"] == "failPW" ) {
               echo "<div class='alert alert-danger' role='alert'>Fehler: Sie haben das falsche Passwort eingegeben.</div>";
             } else if ( $_GET["msg"] == "failToEarly" ) {
-              echo "<div class='alert alert-danger' role='alert'>Fehler: Dieser Termin kann erst ab dem 01.12." . $_GET["year"]-1 . " gebucht werden.</div>";
+              echo "<div class='alert alert-danger' role='alert'>Fehler: Dieser Termin kann momentan nur vom Vorstand  gebucht werden.</div>";
             } else if ( $_GET["msg"] == "successDelete" ) {
               echo "<div class='alert alert-success' role='alert'>Backtermin erfolgreich storniert.</div>";
             } else if ( $_GET["msg"] == "failBackgruppe" ) {
@@ -553,6 +633,25 @@ function shorter( $str ) {
       var modal = $(this)
       modal.find('.modal-title').text('Backtermin am ' + convertedDate + ' buchen:')
       modal.find('.modal-body .form-group .requestedDate').val(recipient)
+    })
+  </script>
+
+  <script>
+    // Dialog fuer Terminbuchung fuer Vorstandsgruppen, Parameteruebergabe
+    $('#bookingModalVostand').on('show.bs.modal', function (event) {
+      // Button der Dialog startet
+      var button = $(event.relatedTarget) 
+      // Lese Information aus data-* Attribut
+      var recipient = button.data('request') 
+      var t_recipient = button.data('t_request') 
+      // konvertiere Parameter nach deutscher Datumskonvention
+      convertedDate = recipient[8] + recipient[9] + "." + recipient[5] + recipient[6] + "." + recipient[0] + recipient[1] + recipient[2] + recipient[3]
+      t_convertedDate = t_recipient[8] + t_recipient[9] + "." + t_recipient[5] + t_recipient[6] + "." + t_recipient[0] + t_recipient[1] + t_recipient[2] + t_recipient[3]
+      // Schreibe Parameter in Titelzeile in Modal
+      var modal = $(this)
+      modal.find('.modal-title').text('Backtermin am ' + convertedDate + ' buchen:')
+      modal.find('.modal-body .form-group .requestedDate').val(recipient)
+      modal.find('.modal-body .text-danger .date').text( t_convertedDate )
     })
   </script>
 
